@@ -105,7 +105,7 @@ $("py").onclick=()=>{Y--;S=null;render()};$("ny").onclick=()=>{Y++;S=null;render
 $("ex").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:"application/json"}));a.download="finanse-kopia.json";a.click()};
 $("im").onclick=()=>$("fi").click();
 $("fi").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);D={inc:j.inc||{},sav:j.sav||{},sb:j.sb||{},exp:j.exp||{}};save(true);render()}catch(x){alert("Nieprawidłowy plik")}};r.readAsText(f)};
-const SUPABASE_URL="WKLEJ_TUTAJ_URL_PROJEKTU",SUPABASE_KEY="WKLEJ_TUTAJ_KLUCZ_ANON";
+const SUPABASE_URL="https://knvrdrbqivpofhbksdkw.supabase.co",SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtudnJkcmJxaXZwb2ZoYmtzZGt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU1NTExMjcsImV4cCI6MjExMTEyNzEyN30.P6FIQ4niScQs9UfBbuu9aPipksadwgj1pCAACRnbyzw";
 let sb=null,UID=null,ch=null,dirty=new Set(),busy=false,tm=null,lt=null;
 const setS=t=>{$("st").textContent=t};
 function months(){const s=new Set();["inc","sav","sb"].forEach(f=>Object.keys(D[f]).forEach(m=>s.add(m)));Object.keys(D.exp).forEach(k=>s.add(k.slice(0,7)));return[...s]}
