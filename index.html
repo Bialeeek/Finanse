@@ -93,7 +93,7 @@ $("tot").textContent=l.length?"Wydatki: "+zl(dsum(k))+(din(k)?" · Wpływy: "+zl
 $("cal").onclick=e=>{const b=e.target.closest("[data-d]");if(b){S=+b.dataset.d;render();if(innerWidth<760)$("dt").scrollIntoView({behavior:"smooth"})}};
 $("add").onclick=()=>{const a=parseFloat($("am").value);if(!S||!(a>0))return;const k=dk(S);
 const tin=$("tp").value=="in";(D.exp[k]=D.exp[k]||[]).push({id:Date.now()+Math.random(),amt:a,t:tin?"in":"out",cat:$("ct").value.trim()||(tin?"Przelew przychodzący":"Inne"),note:$("nt").value.trim()});
-$("am").value=$("nt").value="";save();render();$("am").focus()};
+$("am").value=$("ct").value=$("nt").value="";save();render();$("am").focus()};
 $("ls").onclick=e=>{const x=e.target.dataset.x;if(!x)return;const k=dk(S);D.exp[k]=D.exp[k].filter(i=>String(i.id)!==x);if(!D.exp[k].length)delete D.exp[k];save();render()};
 $("inc").oninput=()=>{D.inc[mk()]=+$("inc").value;save();render2()};
 $("sav").oninput=()=>{D.sav[mk()]=+$("sav").value;save();render2()};
