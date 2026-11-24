@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moje finanse</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1c2430;--mu:#6b7686;--bd:#e1e5ea;--ac:#2f6fed;--ok:#1f9d63;--bad:#d64545;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161c;--card:#1b212a;--tx:#e8ecf1;--mu:#93a0b2;--bd:#2c3542;--ac:#6b9bff;--ok:#4cc790;--bad:#ff7b7b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12161c;--card:#1b212a;--tx:#e8ecf1;--mu:#93a0b2;--bd:#2c3542;--ac:#6b9bff;--ok:#4cc790;--bad:#ff7b7b;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.w{max-width:1000px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0}h2{font-size:16px;margin:0 0 10px}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,input,select{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px}
+button{cursor:pointer}button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+input[type=number]{width:120px}.yr{width:80px!important;text-align:center}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.dh{font-size:12px;color:var(--mu);text-align:center}
+.d{min-height:62px;border:1px solid var(--bd);border-radius:8px;padding:4px 6px;cursor:pointer;background:var(--card);text-align:left;display:block;width:100%}
+.d.sel{outline:2px solid var(--ac)}.d.t{border-color:var(--ac)}.d.e{visibility:hidden}
+.d{min-width:0;overflow:hidden}.d b{font-size:12px;color:var(--mu)}.d span{display:block;font-size:12px;color:var(--bad);font-weight:600;margin-top:2px}.d span.i{color:var(--ok)}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.k{border:1px solid var(--bd);border-radius:10px;padding:10px}.k small{color:var(--mu);display:block}.k div{font-size:20px;font-weight:700}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.bar{height:8px;background:var(--bd);border-radius:4px;margin:3px 0 10px}.bar i{display:block;height:100%;background:var(--ac);border-radius:4px}
+.li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)}
+.li small{color:var(--mu)}.x{border:0;color:var(--bad);padding:0 6px;background:none}
+.cols{display:grid;grid-template-columns:3fr 2fr;gap:14px}@media(max-width:760px){.cols{grid-template-columns:1fr}.d{min-height:50px}}@media(max-width:520px){.w{padding:10px}.cal{gap:2px}.d{min-height:46px;padding:2px 3px}.d span{font-size:10px}.g{grid-template-columns:1fr 1fr}.k div{font-size:16px}input[type=number]{width:100%}.row>div{flex:1 1 140px}.top h1{font-size:18px}}
+label{font-size:12px;color:var(--mu);display:block}
+.lg{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}.lg form{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px;width:100%;max-width:340px;display:grid;gap:10px}.lg input{width:100%}#lm{color:var(--bad);font-size:13px;min-height:18px}
+</style></head><body><div class="lg" id="lg"><form id="lf"><h1>💰 Moje finanse</h1><input id="le" type="email" placeholder="E-mail" autocomplete="username" required><input id="lp" type="password" placeholder="Hasło" autocomplete="current-password" required><button class="p" type="submit">Zaloguj</button><div id="lm"></div></form></div>
+<div class="w">
+<div class="top"><div><h1>💰 Moje finanse</h1><small id="st" style="color:var(--mu)"></small> <button id="lo" style="padding:2px 8px;font-size:12px">Wyloguj</button></div>
+<div class="row"><button id="py">‹</button><input id="yr" class="yr" type="number" title="Rok (możesz wpisać dowolny)"><button id="ny">›</button>
+<select id="mo"></select></div></div>
+
+<div class="card"><h2>Podsumowanie miesiąca</h2>
+<div class="row" style="margin-bottom:10px">
+<div><label>Saldo konta na początku miesiąca (zł)</label><input id="sb" type="number" step="0.01"></div>
+<div><label>Inny przychód bez przelewu (zł, opcjonalnie)</label><input id="inc" type="number" step="0.01" min="0"></div>
+<div><label>Odłożono na konto oszczędnościowe (zł)</label><input id="sav" type="number" step="0.01" min="0"></div></div>
+<div class="g" id="kp"></div><div id="cats" style="margin-top:14px"></div></div>
+
+<div class="cols"><div class="card"><h2 id="mt"></h2><div class="cal" id="cal"></div></div>
+<div class="card"><h2 id="dt">Wybierz dzień</h2>
+<div class="row" id="fm" style="margin-bottom:8px"><select id="tp"><option value="out">Wydatek</option><option value="in">Wpływ (przelew)</option></select>
+<input id="am" type="number" step="0.01" min="0" placeholder="Kwota zł" style="width:110px">
+<input id="ct" list="cl" placeholder="Kategoria" style="width:130px"><datalist id="cl"></datalist>
+<input id="nt" placeholder="Notatka (opcjonalnie)" style="flex:1;min-width:120px">
+<button class="p" id="add">Dodaj</button></div>
+<div id="ls"></div><div id="tot" style="margin-top:8px;font-weight:700"></div></div></div>
+
+<div class="card"><h2>Kopia danych</h2><p style="color:var(--mu);margin:0 0 8px">Dane są zapisywane w tej przeglądarce. Rób kopię od czasu do czasu.</p>
+<div class="row"><button id="ex">Eksportuj (JSON)</button><button id="im">Importuj</button><input type="file" id="fi" accept=".json" hidden></div></div>
+</div>
+<script>
+const MN=["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
+const DEF=["Jedzenie","Mieszkanie","Transport","Rachunki","Rozrywka","Zdrowie","Ubrania","Inne"];
+const $=i=>document.getElementById(i),p2=n=>String(n).padStart(2,"0"),zl=n=>(Math.round(n*100)/100).toLocaleString("pl-PL",{minimumFractionDigits:2,maximumFractionDigits:2})+" zł";
+let D={inc:{},sav:{},sb:{},exp:{}};const c0=n=>Math.round(n).toLocaleString("pl-PL");
+
+const saveL=()=>{};const save=all=>{saveL();if(all)months().forEach(push);else push(mk())};
+const now=new Date();let Y=now.getFullYear(),M=now.getMonth(),S=null;
+const mk=()=>Y+"-"+p2(M+1),dk=d=>mk()+"-"+p2(d);
+MN.forEach((m,i)=>$("mo").add(new Option(m,i)));
+const dsum=k=>(D.exp[k]||[]).reduce((a,e)=>e.t=="in"?a:a+e.amt,0),din=k=>(D.exp[k]||[]).reduce((a,e)=>e.t=="in"?a+e.amt:a,0);
+function monthExp(){const o=[],pre=mk()+"-";for(const k in D.exp)if(k.startsWith(pre))D.exp[k].forEach(e=>o.push(e));return o}
+function cats(){const s=new Set(DEF);for(const k in D.exp)D.exp[k].forEach(e=>{if(e.t!="in")s.add(e.cat)});return[...s]}
+function render(){
+$("yr").value=Y;$("mo").value=M;$("inc").value=D.inc[mk()]??"";$("sb").value=D.sb[mk()]??"";$("sav").value=D.sav[mk()]??"";
+$("cl").innerHTML=cats().map(c=>`<option value="${c}">`).join("");
+$("mt").textContent=MN[M]+" "+Y;
+let h=["Pn","Wt","Śr","Cz","Pt","So","Nd"].map(x=>`<div class="dh">${x}</div>`).join("");
+const first=(new Date(Y,M,1).getDay()+6)%7,n=new Date(Y,M+1,0).getDate();
+for(let i=0;i<first;i++)h+='<div class="d e"></div>';
+for(let d=1;d<=n;d++){const s=dsum(dk(d)),si=din(dk(d)),t=now.getFullYear()==Y&&now.getMonth()==M&&now.getDate()==d;
+h+=`<button class="d${S==d?" sel":""}${t?" t":""}" data-d="${d}"><b>${d}</b>${si?`<span class="i">+${c0(si)}</span>`:""}${s?`<span>−${c0(s)}</span>`:""}</button>`}
+$("cal").innerHTML=h;
+const all=monthExp(),ex=all.filter(e=>e.t!="in"),sp=ex.reduce((a,e)=>a+e.amt,0),tr=all.filter(e=>e.t=="in").reduce((a,e)=>a+e.amt,0),inc=(+D.inc[mk()]||0)+tr,sv=+D.sav[mk()]||0,sb=+D.sb[mk()]||0,left=inc-sp,bal=sb+inc-sp-sv,tot=Object.keys(D.sav).filter(k=>k<=mk()).reduce((a,k)=>a+(+D.sav[k]||0),0);
+$("kp").innerHTML=[["Saldo na początku miesiąca",zl(sb),""],["Wpływy (przelewy + przychód)",zl(inc),"ok"],["Wydano",zl(sp),"bad"],["Zaoszczędzono (wpływy − wydatki)",zl(left),left>=0?"ok":"bad"],["Odłożono na konto oszcz.",zl(sv),"ok"],["Oszczędności łącznie (narastająco)",zl(tot),"ok"],["Saldo konta na koniec miesiąca",zl(bal),bal>=0?"":"bad"]].map(k=>`<div class="k"><small>${k[0]}</small><div class="${k[2]}">${k[1]}</div></div>`).join("");
+const by={};ex.forEach(e=>by[e.cat]=(by[e.cat]||0)+e.amt);
+const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+$("cats").innerHTML=rows.length?"<h2>Na co poszły pieniądze</h2>"+rows.map(([c,v])=>`<div class="row" style="justify-content:space-between"><span>${c}</span><span>${zl(v)} · ${Math.round(v/sp*100)}%</span></div><div class="bar"><i style="width:${v/sp*100}%"></i></div>`).join(""):'<p style="color:var(--mu)">Brak wydatków w tym miesiącu.</p>';
+day()}
+function day(){
+if(!S){$("dt").textContent="Wybierz dzień";$("fm").style.display="none";$("ls").innerHTML="";$("tot").textContent="";return}
+$("fm").style.display="";const k=dk(S),l=D.exp[k]||[];
+$("dt").textContent=`${S} ${MN[M].toLowerCase()} ${Y}`;
+$("ls").innerHTML=l.length?l.map(e=>`<div class="li"><div>${e.cat}<br><small>${e.note?e.note.replace(/</g,"&lt;"):""}</small></div><div class="${e.t=="in"?"ok":""}">${e.t=="in"?"+":""}${zl(e.amt)}<button class="x" data-x="${e.id}" title="Usuń">✕</button></div></div>`).join(""):'<p style="color:var(--mu)">Brak wydatków tego dnia.</p>';
+$("tot").textContent=l.length?"Wydatki: "+zl(dsum(k))+(din(k)?" · Wpływy: "+zl(din(k)):""):""}
+$("cal").onclick=e=>{const b=e.target.closest("[data-d]");if(b){S=+b.dataset.d;render();if(innerWidth<760)$("dt").scrollIntoView({behavior:"smooth"})}};
+$("add").onclick=()=>{const a=parseFloat($("am").value);if(!S||!(a>0))return;const k=dk(S);
+const tin=$("tp").value=="in";(D.exp[k]=D.exp[k]||[]).push({id:Date.now()+Math.random(),amt:a,t:tin?"in":"out",cat:$("ct").value.trim()||(tin?"Przelew przychodzący":"Inne"),note:$("nt").value.trim()});
+$("am").value=$("nt").value="";save();render();$("am").focus()};
+$("ls").onclick=e=>{const x=e.target.dataset.x;if(!x)return;const k=dk(S);D.exp[k]=D.exp[k].filter(i=>String(i.id)!==x);if(!D.exp[k].length)delete D.exp[k];save();render()};
+$("inc").oninput=()=>{D.inc[mk()]=+$("inc").value;save();render2()};
+$("sav").oninput=()=>{D.sav[mk()]=+$("sav").value;save();render2()};
+$("sb").oninput=()=>{D.sb[mk()]=+$("sb").value;save();render2()};
+function render2(){const a=document.activeElement.id,v=document.activeElement.value;render();if(a){$(a).focus();$(a).value=v}}
+$("mo").onchange=()=>{M=+$("mo").value;S=null;render()};
+$("yr").onchange=()=>{const y=parseInt($("yr").value);if(y>1900&&y<3000){Y=y;S=null}render()};
+$("py").onclick=()=>{Y--;S=null;render()};$("ny").onclick=()=>{Y++;S=null;render()};
+$("ex").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:"application/json"}));a.download="finanse-kopia.json";a.click()};
+$("im").onclick=()=>$("fi").click();
+$("fi").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);D={inc:j.inc||{},sav:j.sav||{},sb:j.sb||{},exp:j.exp||{}};save(true);render()}catch(x){alert("Nieprawidłowy plik")}};r.readAsText(f)};
+const SUPABASE_URL="WKLEJ_TUTAJ_URL_PROJEKTU",SUPABASE_KEY="WKLEJ_TUTAJ_KLUCZ_ANON";
+let sb=null,UID=null,ch=null,dirty=new Set(),busy=false,tm=null,lt=null;
+const setS=t=>{$("st").textContent=t};
+function months(){const s=new Set();["inc","sav","sb"].forEach(f=>Object.keys(D[f]).forEach(m=>s.add(m)));Object.keys(D.exp).forEach(k=>s.add(k.slice(0,7)));return[...s]}
+function mdoc(m){const o={inc:+D.inc[m]||0,sav:+D.sav[m]||0,sb:+D.sb[m]||0,exp:{}};for(const k in D.exp)if(k.startsWith(m+"-"))o.exp[k]=D.exp[k];return o}
+function wipe(m){for(const k in D.exp)if(k.startsWith(m+"-"))delete D.exp[k];delete D.inc[m];delete D.sav[m];delete D.sb[m]}
+function push(m){if(!sb||!UID)return;dirty.add(m);setS("Zapisywanie…");clearTimeout(tm);tm=setTimeout(flush,600)}
+async function flush(){if(busy){tm=setTimeout(flush,600);return}busy=true;
+while(dirty.size){const m=[...dirty][0];dirty.delete(m);const{error}=await sb.from("months").upsert({user_id:UID,month:m,data:mdoc(m)},{onConflict:"user_id,month"});if(error){dirty.add(m);setS("Błąd synchronizacji: "+error.message);busy=false;return}}
+busy=false;setS("☁ Zsynchronizowano")}
+async function load(){if(!UID)return;const{data,error}=await sb.from("months").select("month,data");if(error){setS("Błąd: "+error.message);return}
+let c=false;const seen=new Set();
+data.forEach(r=>{const m=r.month;seen.add(m);if(dirty.has(m))return;const before=JSON.stringify(mdoc(m));wipe(m);const x=r.data||{};if(x.inc)D.inc[m]=x.inc;if(x.sav)D.sav[m]=x.sav;if(x.sb)D.sb[m]=x.sb;Object.assign(D.exp,x.exp||{});if(JSON.stringify(mdoc(m))!=before)c=true});
+months().forEach(m=>{if(!seen.has(m)&&!dirty.has(m)){wipe(m);c=true}});
+if(c)render();if(!dirty.size&&!busy)setS("☁ Zsynchronizowano")}
+const later=()=>{clearTimeout(lt);lt=setTimeout(load,400)};
+async function enter(s){UID=s.user.id;$("lg").style.display="none";setS("Łączenie…");await load();
+if(!ch)ch=sb.channel("months-"+UID).on("postgres_changes",{event:"*",schema:"public",table:"months"},later).subscribe()}
+function leave(){UID=null;D={inc:{},sav:{},sb:{},exp:{}};S=null;if(ch){sb.removeChannel(ch);ch=null}$("lg").style.display="flex";render()}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)load()});
+$("lf").onsubmit=async e=>{e.preventDefault();$("lm").textContent="";if(!sb)return;const{error}=await sb.auth.signInWithPassword({email:$("le").value.trim(),password:$("lp").value});if(error)$("lm").textContent="Nieprawidłowy e-mail lub hasło.";else $("lp").value=""};
+$("lo").onclick=()=>sb&&sb.auth.signOut();
+(async()=>{if(!window.supabase||SUPABASE_URL.startsWith("WKLEJ")){$("lm").textContent="Uzupełnij SUPABASE_URL i SUPABASE_KEY na początku skryptu w pliku index.html.";return}
+sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+sb.auth.onAuthStateChange((ev,s)=>{if(s&&s.user.id!==UID)enter(s);else if(!s&&UID)leave()});
+const{data}=await sb.auth.getSession();if(data.session&&data.session.user.id!==UID)enter(data.session)})();
+render();
+</script></body></html>
